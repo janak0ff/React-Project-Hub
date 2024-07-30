@@ -61,14 +61,23 @@ export default function App() {
       </NavBar>
 
       <Main>
-        <Box>
+        <Box element={<MovieList movies={movies} />} />
+        <Box
+          element={
+            <>
+              <WatchSummary watched={watched} />
+              <WatchMovieList watched={watched} />
+            </>
+          }
+        />
+        {/* <Box>
           <MovieList movies={movies} />
         </Box>
 
         <Box>
           <WatchSummary watched={watched} />
           <WatchMovieList watched={watched} />
-        </Box>
+        </Box> */}
       </Main>
     </>
   );
@@ -110,38 +119,26 @@ function NumResult({ movies }) {
   );
 }
 
-function Box({ children }) {
+function Box({ element }) {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <div className="box">
       <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
         {isOpen ? "–" : "+"}
       </button>
-      {isOpen && children}
+      {isOpen && element}
     </div>
   );
 }
-
-// function WatchBox() {
-//   const [isOpen2, setIsOpen2] = useState(true);
-
+// function Box({ children }) {
+//   const [isOpen, setIsOpen] = useState(true);
 //   return (
-//     <>
-//       <div className="box">
-//         <button
-//           className="btn-toggle"
-//           onClick={() => setIsOpen2((open) => !open)}
-//         >
-//           {isOpen2 ? "–" : "+"}
-//         </button>
-//         {isOpen2 && (
-//           <>
-//             <WatchSummary watched={watched} />
-//             <WatchMovieList watched={watched} />
-//           </>
-//         )}
-//       </div>
-//     </>
+//     <div className="box">
+//       <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
+//         {isOpen ? "–" : "+"}
+//       </button>
+//       {isOpen && children}
+//     </div>
 //   );
 // }
 
