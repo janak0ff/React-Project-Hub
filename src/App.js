@@ -1,4 +1,4 @@
-import { Children, useState } from "react";
+import { Children, useEffect, useState } from "react";
 
 const tempMovieData = [
   {
@@ -24,35 +24,43 @@ const tempMovieData = [
   },
 ];
 
-const tempWatchedData = [
-  {
-    imdbID: "tt1375666",
-    Title: "Inception",
-    Year: "2010",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
-    runtime: 148,
-    imdbRating: 8.8,
-    userRating: 10,
-  },
-  {
-    imdbID: "tt0088763",
-    Title: "Back to the Future",
-    Year: "1985",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
-    runtime: 116,
-    imdbRating: 8.5,
-    userRating: 9,
-  },
-];
-
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
+const KEY = "a6c26c0c";
+
 export default function App() {
-  const [watched, setWatched] = useState(tempWatchedData);
-  const [movies, setMovies] = useState(tempMovieData);
+  const [watched, setWatched] = useState([]);
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const query = "America";
+
+  useEffect(function () {
+    async function fetchMovies() {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `http://www.omdbapi.com/?i=tt3896198&apikey=${KEY}&s=${query}`
+        );
+
+        if (!res.ok) throw new Error("Something went wrong while fetching");
+
+        const data = await res.json();
+        if (data.Response === "False") throw new Error("Movie Not Found");
+
+        setMovies(data.Search);
+        // console.log(data);
+      } catch (err) {
+        // console.error(err.message);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchMovies();
+  }, []);
+
   return (
     <>
       <NavBar>
@@ -61,7 +69,7 @@ export default function App() {
       </NavBar>
 
       <Main>
-        <Box element={<MovieList movies={movies} />} />
+        {/* <Box element={<MovieList movies={movies} />} />
         <Box
           element={
             <>
@@ -69,17 +77,38 @@ export default function App() {
               <WatchMovieList watched={watched} />
             </>
           }
-        />
+        /> */}
+
+        <Box>
+          {isLoading && <Loader />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {error && <ErrorMessage message={error} />}
+
+          {/* {isLoding ? <Loader /> : <MovieList movies={movies} />} */}
+        </Box>
         {/* <Box>
           <MovieList movies={movies} />
-        </Box>
+        </Box> */}
 
         <Box>
           <WatchSummary watched={watched} />
           <WatchMovieList watched={watched} />
-        </Box> */}
+        </Box>
       </Main>
     </>
+  );
+}
+
+function Loader() {
+  return <p className="Loader">Loading...</p>;
+}
+
+function ErrorMessage({ message }) {
+  return (
+    <p className="error">
+      <span>⛔</span>
+      {message}
+    </p>
   );
 }
 
@@ -119,28 +148,29 @@ function NumResult({ movies }) {
   );
 }
 
-function Box({ element }) {
-  const [isOpen, setIsOpen] = useState(true);
-  return (
-    <div className="box">
-      <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
-        {isOpen ? "–" : "+"}
-      </button>
-      {isOpen && element}
-    </div>
-  );
-}
-// function Box({ children }) {
+// function Box({ element }) {
 //   const [isOpen, setIsOpen] = useState(true);
 //   return (
 //     <div className="box">
 //       <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
 //         {isOpen ? "–" : "+"}
 //       </button>
-//       {isOpen && children}
+//       {isOpen && element}
 //     </div>
 //   );
 // }
+
+function Box({ children }) {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div className="box">
+      <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
+        {isOpen ? "–" : "+"}
+      </button>
+      {isOpen && children}
+    </div>
+  );
+}
 
 function MovieList({ movies }) {
   return (
