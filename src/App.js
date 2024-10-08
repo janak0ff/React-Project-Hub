@@ -30,10 +30,13 @@ export default function App() {
           if (data.Response === "False") throw new Error("Movie Not Found");
 
           setMovies(data.Search);
+          setError("");
           // console.log(data.Search);
         } catch (err) {
           // console.error(err.message);
-          setError(err.message);
+          if (err.name !== "AbrotError") {
+            setError(err.message);
+          }
         } finally {
           setIsLoading(false);
         }
@@ -250,6 +253,7 @@ function MoviesDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   const watchedUserRating = watched.find(
     (movie) => movie.imdbID === selectedId
   )?.userRating;
+  const controller = new AbortController();
 
   const {
     Title: title,
@@ -287,7 +291,8 @@ function MoviesDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
           setIsLoading(true);
           setError("");
           const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`
+            `http://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`,
+            { signal: controller.signal }
           );
 
           if (!res.ok) throw new Error("Something went wrong while fetching");
@@ -301,6 +306,9 @@ function MoviesDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
         }
       }
       getMovieDetails();
+      return function () {
+        controller.abort();
+      };
     },
     [selectedId]
   );
@@ -309,6 +317,10 @@ function MoviesDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     function () {
       if (!title) return;
       document.title = title;
+
+      return function () {
+        document.title = "Popcorn Movies";
+      };
     },
     [title]
   );
