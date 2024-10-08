@@ -30,7 +30,7 @@ export default function App() {
           if (data.Response === "False") throw new Error("Movie Not Found");
 
           setMovies(data.Search);
-          // console.log(data.Search);
+          console.log(data.Search);
         } catch (err) {
           // console.error(err.message);
           setError(err.message);
@@ -74,6 +74,11 @@ export default function App() {
   function handleCloseMovie() {
     setSelectedId(null);
   }
+
+  function handleAddWatched(movie) {
+    setWatched((watched) => [...watched, movie]);
+  }
+
   return (
     <>
       <NavBar>
@@ -110,6 +115,7 @@ export default function App() {
             <MoviesDetails
               selectedId={selectedId}
               onCloseMovie={handleCloseMovie}
+              onAddWatched={handleAddWatched}
             />
           ) : (
             <>
@@ -227,7 +233,7 @@ function Main({ children }) {
   return <main className="main">{children}</main>;
 }
 
-function MoviesDetails({ selectedId, onCloseMovie }) {
+function MoviesDetails({ selectedId, onCloseMovie, onAddWatched }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -244,6 +250,22 @@ function MoviesDetails({ selectedId, onCloseMovie }) {
     Director: director,
     Genre: genre,
   } = movie;
+
+  function handleAdd() {
+    const newWatchedMovie = {
+      imdbID: selectedId,
+      title,
+      year,
+      poster,
+      imdbRating: Number(imdbRating),
+      runtime: Number(runtime.split(" ").at(0)),
+      // userRating,
+      // countRatingDecisions: countRef.current,
+    };
+
+    onAddWatched(newWatchedMovie);
+    onCloseMovie();
+  }
 
   useEffect(
     function () {
@@ -300,6 +322,9 @@ function MoviesDetails({ selectedId, onCloseMovie }) {
                 size={24}
                 // onSetRating={setUserRating}
               />
+              <button className="btn-add" onClick={handleAdd}>
+                + Add to list
+              </button>
             </div>
             <p>
               <em>{plot}</em>
@@ -310,12 +335,6 @@ function MoviesDetails({ selectedId, onCloseMovie }) {
         </>
       )}
       {error && <ErrorMessage message={error} />}
-
-      {/* {isLoading ? (
-        <Loader />
-      ) : (
-      
-      )} */}
     </div>
   );
 }
@@ -362,9 +381,10 @@ function WatchMovieList({ watched }) {
 function WatchMovie({ movie }) {
   return (
     <li>
-      <img src={movie.Poster} alt={`${movie.Title} poster`} />
-      <h3>{movie.Title}</h3>
+      <img src={movie.poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.title}</h3>
       <div>
+        Poster
         <p>
           <span>⭐️</span>
           <span>{movie.imdbRating}</span>
