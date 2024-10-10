@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 
 const tempMovieData = [
@@ -227,6 +227,32 @@ function Logo() {
 }
 
 function Search({ query, setQuery }) {
+  const inputEl = useRef(null);
+
+  useEffect(
+    function () {
+      function callback(e) {
+        if (document.activeElement === inputEl.current) return;
+
+        if (e.code === "Enter") {
+          // inputEl.current.select();
+          inputEl.current.focus();
+          setQuery("");
+        }
+      }
+
+      document.addEventListener("keydown", callback);
+      return () => document.addEventListener("keydown", callback);
+    },
+    [setQuery]
+  );
+  //OR
+  // useEffect(function () {
+  //   const el = document.querySelector(".search");
+  //   console.log(el);
+  //   el.focus();
+  // }, []);
+
   return (
     <input
       className="search"
@@ -234,6 +260,8 @@ function Search({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      ref={inputEl}
+      title="Press Enter to clear text and start typing"
     />
   );
 }
@@ -353,10 +381,13 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onCloseMovie();
   }
 
+  // This useEffect hook is used to listen for the "Backspace" key press event.
+  // When the "Backspace" key is pressed, the onCloseMovie function is called.
+  // This hook is dependent on the onCloseMovie function, meaning it will be re-run whenever onCloseMovie changes.
   useEffect(
     function () {
       function callback(e) {
-        if (e.code === "Escape") {
+        if (e.code === "Backspace") {
           onCloseMovie();
         }
       }
@@ -430,7 +461,11 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       {!isLoading && !error && (
         <>
           <header>
-            <button className="btn-back" onClick={onCloseMovie}>
+            <button
+              className="btn-back"
+              onClick={onCloseMovie}
+              title="Press Backspace"
+            >
               &larr;
             </button>
             <img src={poster} alt={`Poster of ${movie} movie`} />
