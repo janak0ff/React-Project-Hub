@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
+import { useMovies } from "./useMovies";
 
 const tempMovieData = [
   {
@@ -55,9 +56,9 @@ const KEY = "a6c26c0c";
 
 export default function App() {
   const [query, setQuery] = useState("Thor");
-  const [movies, setMovies] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  // const [movies, setMovies] = useState([]);
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
   // const [watched, setWatched] = useState([]);
@@ -108,53 +109,54 @@ export default function App() {
     [watched]
   );
 
-  useEffect(
-    function () {
-      const controller = new AbortController();
+  const { movies, isLoading, error } = useMovies(query);
+  // useEffect(
+  //   function () {
+  //     const controller = new AbortController();
 
-      async function fetchMovies() {
-        try {
-          setIsLoading(true);
-          setError("");
+  //     async function fetchMovies() {
+  //       try {
+  //         setIsLoading(true);
+  //         setError("");
 
-          const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-            { signal: controller.signal }
-          );
+  //         const res = await fetch(
+  //           `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+  //           { signal: controller.signal }
+  //         );
 
-          if (!res.ok)
-            throw new Error("Something went wrong with fetching movies");
+  //         if (!res.ok)
+  //           throw new Error("Something went wrong with fetching movies");
 
-          const data = await res.json();
-          if (data.Response === "False") throw new Error("Movie not found");
+  //         const data = await res.json();
+  //         if (data.Response === "False") throw new Error("Movie not found");
 
-          setMovies(data.Search);
-          setError("");
-        } catch (err) {
-          if (err.name !== "AbortError") {
-            console.log(err.message);
-            setError(err.message);
-          }
-        } finally {
-          setIsLoading(false);
-        }
-      }
+  //         setMovies(data.Search);
+  //         setError("");
+  //       } catch (err) {
+  //         if (err.name !== "AbortError") {
+  //           console.log(err.message);
+  //           setError(err.message);
+  //         }
+  //       } finally {
+  //         setIsLoading(false);
+  //       }
+  //     }
 
-      if (query.length < 3) {
-        setMovies([]);
-        setError("");
-        return;
-      }
+  //     if (query.length < 3) {
+  //       setMovies([]);
+  //       setError("");
+  //       return;
+  //     }
 
-      handleCloseMovie();
-      fetchMovies();
+  //     handleCloseMovie();
+  //     fetchMovies();
 
-      return function () {
-        controller.abort();
-      };
-    },
-    [query]
-  );
+  //     return function () {
+  //       controller.abort();
+  //     };
+  //   },
+  //   [query]
+  // );
 
   return (
     <>
@@ -348,7 +350,27 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState("");
 
+  // countRef is a reference to a mutable value that is initialized to 0.
+  // It is used to keep track of how many times the user has rated the movie.
+  // This value is used to conditionally render the "You have already rated this movie" message.
+  const countRef = useRef(0);
+
+  useEffect(
+    function () {
+      // If the user has rated the movie (i.e. userRating is truthy), increment the count.
+      // This effect is run whenever the userRating state changes.
+      if (userRating) countRef.current++;
+    },
+    [userRating]
+  );
+
+  // Create an array of just the IDs of the watched movies
+  // then use the includes() method to check if the selected ID is in the array
   const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
+
+  // Find the movie in the watched list that has the same ID as the selected ID
+  // and get its userRating property. If the movie is not found, this will be undefined.
+  // The optional chaining operator (?.) is used to avoid an error if the movie is not found.
   const watchedUserRating = watched.find(
     (movie) => movie.imdbID === selectedId
   )?.userRating;
@@ -375,6 +397,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
       userRating,
+      countRatingDecisions: countRef.current,
     };
 
     onAddWatched(newWatchedMovie);
