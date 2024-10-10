@@ -81,7 +81,7 @@ body {
   position: relative;
 }
 
-.Loader {
+.loader {
   text-align: center;
   text-transform: uppercase;
   font-size: 2rem;
@@ -310,6 +310,7 @@ body {
   margin-bottom: 0.8rem;
   font-weight: 600;
   display: flex;
+  align-items: center;
   flex-direction: column;
   gap: 2.4rem;
 }
@@ -394,5 +395,13 @@ body {
   .rating {
     padding: 1rem 0.4rem;
     overflow: hidden;
+  }
+
+  .details section {
+    padding: 1rem;
+  }
+
+  .list li {
+    padding: 1.6rem 1.2rem;
   }
 }
