@@ -9,6 +9,6 @@ const rootReducer = combineReducers({
 })
 
 // create a Redux store instance and pass the combined reducer function
-const store = createStore(rootReducer); // store
+const store = createStore(rootReducer); // store 
 
 export default store;
