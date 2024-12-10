@@ -29,7 +29,7 @@ const accountSlice = createSlice({
         state.balance += action.payload.amount;
       },
     },
-    payLoan(state, action) {
+    payLoan(state) {
       state.balance -= state.loan;
       state.loan = 0;
       state.loanPurpose = "";
@@ -39,7 +39,7 @@ const accountSlice = createSlice({
 
 // Export reducers and actions
 export const { deposit, withdraw, requestLoan, payLoan } = accountSlice.actions;
-export default accountSlice;
+export default accountSlice.reducer; // Export the reducer, not the entire slice
 
 // export default function accountReducer(state = initialStateAccount, action) {
 //   switch (action.type) {
